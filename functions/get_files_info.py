@@ -1,7 +1,9 @@
 # python
 import os
+import types
 from config import MAX_CHARS
 import subprocess
+from google.genai import types
 
 
 def get_files_info(working_directory, directory="."):
@@ -76,3 +78,19 @@ def run_python_file(working_directory, file_path, args=[]):
         return "".join([f"STDOUT:\n{stdout.decode('utf-8')}", f"STDERR:\n{stderr.decode('utf-8')}"])
     except Exception as e:
         return f"Error: executing Python file: {e}"
+    
+
+
+schema_get_files_info = types.FunctionDeclaration(
+    name="get_files_info",
+    description="Lists files in the specified directory along with their sizes, constrained to the working directory.",
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+            "directory": types.Schema(
+                type=types.Type.STRING,
+                description="The directory to list files from, relative to the working directory. If not provided, lists files in the working directory itself.",
+            ),
+        },
+    ),
+)
