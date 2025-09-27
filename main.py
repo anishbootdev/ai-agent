@@ -39,17 +39,26 @@ config=types.GenerateContentConfig(
 messages = [
     types.Content(role="user", parts=[types.Part(text=user_prompt)]),
 ]
-response = client.models.generate_content(
-    model='gemini-2.0-flash-001', contents=messages,config=config,
-)
-if response.function_calls:
-    for function_call_part in response.function_calls:
-        function_call_result = call_function(function_call_part, verbose='--verbose' in sys.argv)
-        if function_call_result.parts[0].function_response.response:
-            if '--verbose' in sys.argv:
-                print(f"-> {function_call_result.parts[0].function_response.response}")
-        else:
-            raise Exception("No response from function call")
+for i in range(20):
+    try:
+        response = client.models.generate_content(
+            model='gemini-2.0-flash-001', contents=messages,config=config,
+        )
+        if response.text:
+            print("response text:", response.text)
+        map(lambda candidate: messages.append(candidate.content), response.candidates)
+        if response.function_calls:
+            for function_call_part in response.function_calls:
+                function_call_result = call_function(function_call_part, verbose='--verbose' in sys.argv)
+                if function_call_result.parts[-1].function_response.response:
+                    messages.append(function_call_result)
+                    if '--verbose' in sys.argv:
+                        print(f"-> {function_call_result.parts[0].function_response.response}")
+                else:
+                    raise Exception("No response from function call")
+    except Exception as e:
+        print(f"Error during generation or function call: {e}")
+        break
 
 # if '--verbose' in sys.argv:
 #     print(get_file_content(".", "main.py"))
