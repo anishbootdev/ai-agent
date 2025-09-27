@@ -1,0 +1,5 @@
+# This file disables GitHub Copilot for this workspace.
+# See: https://docs.github.com/en/copilot/configuration/configuring-github-copilot-in-your-environment#disabling-github-copilot-in-specific-projects
+
+[github-copilot]
+enabled = false

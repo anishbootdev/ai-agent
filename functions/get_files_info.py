@@ -27,59 +27,6 @@ def get_files_info(working_directory, directory="."):
     except Exception as e:
         return f"Error: {e}"
     
-def get_file_content(working_directory, file_path):
-    try:
-        wd_abs = os.path.abspath(working_directory)
-        file_abs = os.path.abspath(os.path.join(working_directory, file_path))
-
-        if not file_abs.startswith(wd_abs):
-            return f'Error: Cannot read "{file_path}" as it is outside the permitted working directory'
-        if not os.path.isfile(file_abs):
-            return f'Error: File not found or is not a regular file: "{file_path}"'
-        with open(file_abs, "r") as f:
-            file_content_string = f.read(MAX_CHARS)
-            if len(file_content_string) == MAX_CHARS:
-                file_content_string += f"[...File \"{file_path}\" truncated at 10000 characters]"
-        return file_content_string
-    except Exception as e:
-        return f"Error: {e}"
-
-def write_file(working_directory, file_path, content):
-    try:
-        wd_abs = os.path.abspath(working_directory)
-        file_abs = os.path.abspath(os.path.join(working_directory, file_path))
-        if not file_abs.startswith(wd_abs):
-            return f'Error: Cannot write to "{file_path}" as it is outside the permitted working directory'
-        if not os.path.isfile(file_abs):
-            os.makedirs(os.path.dirname(file_abs), exist_ok=True)
-        with open(file_abs, "w") as f:
-            f.write(content)
-        return f'Successfully wrote to "{file_path}" ({len(content)} characters written)'
-    except Exception as e:
-        return f"Error: {e}"
-    
-def run_python_file(working_directory, file_path, args=[]):
-    try:
-        wd_abs = os.path.abspath(working_directory)
-        file_abs = os.path.abspath(os.path.join(working_directory, file_path))
-        if not file_abs.startswith(wd_abs):
-            return f'Error: Cannot execute "{file_path}" as it is outside the permitted working directory'
-        if not os.path.isfile(file_abs):
-            return f'Error: File "{file_path}" not found.'
-        if file_path[-3:] != ".py":
-            return f'Error: File "{file_path}" is not a Python file.'
-        result = subprocess.run(["python", file_abs] + args, timeout=30, capture_output=True)
-        if result.returncode != 0:
-            return f"Process exited with code {result.returncode}"
-        stdout = result.stdout
-        if stdout is None or len(stdout) == 0:
-            return "No output produced"
-        stderr = result.stderr
-        return "".join([f"STDOUT:\n{stdout.decode('utf-8')}", f"STDERR:\n{stderr.decode('utf-8')}"])
-    except Exception as e:
-        return f"Error: executing Python file: {e}"
-    
-
 
 schema_get_files_info = types.FunctionDeclaration(
     name="get_files_info",
@@ -94,3 +41,10 @@ schema_get_files_info = types.FunctionDeclaration(
         },
     ),
 )
+
+def call_function(function_call_part, verbose=False):
+    if verbose:
+        print(f"Calling function: {function_call_part.name}({function_call_part.args})")
+    else:
+        print(f" - Calling function: {function_call_part.name}")
+    function_call_part(**{"working_directory": "./calculator"})
